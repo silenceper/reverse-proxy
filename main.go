@@ -6,24 +6,21 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"runtime"
-	"strings"
 )
 
 type reverseProxy struct {
 }
 
 func (rp *reverseProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	newHost := strings.Replace(r.Host, ".", "-", -1)
-	newHost = strings.Replace(newHost, "_", "-", -1)
 	scheme := "http://"
 	if r.TLS != nil {
 		scheme = "https://"
 	}
-	remote, err := url.Parse(scheme + newHost)
+	remote, err := url.Parse(scheme + r.Host)
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("proxy: %s TO %s", strings.Join([]string{scheme, r.Host, r.RequestURI}, ""), strings.Join([]string{scheme, newHost, r.RequestURI}, ""))
+	log.Printf("proxy: %s ", r.RequestURI)
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 	proxy.ServeHTTP(w, r)
 }
